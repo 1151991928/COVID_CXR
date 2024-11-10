@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import cv2 as cv
 import torch
@@ -10,12 +11,13 @@ from torchvision import transforms
 from PIL import Image
 import torchvision.models as models
 from tqdm import tqdm
-from dataset_CXR import train_data,test_data
-from resnet50 import model
+from dataset_CXR_2label import train_data,test_data
+from resnet50_2label import model
 import sys
+from torch.utils.tensorboard import SummaryWriter
+import torch.optim.lr_scheduler as lr_scheduler
 
-
-batch_size=128
+batch_size=64
 
 data_transforms = transforms.Compose([
     transforms.Resize(256),    # 将图片短边缩放至256，长宽比保持不变：
@@ -33,12 +35,15 @@ test_data_size=len(test_data)
 #损失函数和优化器
 loss_fn=nn.CrossEntropyLoss()
 loss_fn=loss_fn.cuda()
-optimizer=torch.optim.Adam(model.parameters(), lr=0.01)
-
+optimizer=torch.optim.Adam(model.parameters(), lr=0.0001,momentum=0.9,weight_decay=4E-5)
+lf = lambda x: ((1 + math.cos(x * math.pi / epochs)) / 2) * (1 - 0.001) + 0.001  # cosine
+scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
+tb_writer=SummaryWriter('log/')
 
 total_train_step = 0
 total_test_step = 0
-for epoch in range(20):
+epochs=100
+for epoch in range(epochs):
     print(f'Epoch [{epoch+1}/20]')
     
     # 训练阶段
@@ -52,10 +57,11 @@ for epoch in range(20):
         loss = loss_fn(outputs, targets)
         optimizer.zero_grad()
         loss.backward()
-        optimizer.step()
+        scheduler.step()
         total_train_step += 1
         
         train_bar.set_description(f'Train Step: {total_train_step} Loss: {loss.item():.4f}')
+    
     
     # 验证阶段
     model.eval()
@@ -76,6 +82,10 @@ for epoch in range(20):
     
     print(f'Epoch [{epoch+1}/20] Train Step: {total_train_step} Loss: {loss.item():.4f}')
     print(f'Epoch [{epoch+1}/20] Test Loss: {total_test_loss.item() / (total_test_step + 1):.4f} Accuracy: {total_accuracy/test_data_size}')
+    tags = ["loss", "accuracy", "learning_rate"]
+    tb_writer.add_scalar(tags[0], total_test_loss.item() / (total_test_step + 1), epoch)
+    tb_writer.add_scalar(tags[1], total_accuracy/test_data_size, epoch)
+    tb_writer.add_scalar(tags[2], optimizer.param_groups[0]["lr"], epoch)
     torch.save(model.state_dict(), 'pth/'+f'model_epoch_{epoch}.pth')
     total_test_step += 1
 

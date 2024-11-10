@@ -43,8 +43,8 @@ data_transforms = transforms.Compose([
     transforms.ToTensor()  # 把图片进行归一化，并把数据转换成Tensor类型
 ])
 
-train_path = 'E:/2labelcam/data/train.txt'
-test_path = 'E:/2labelcam/data/test.txt'
+train_path = 'dataset/CXR/train.txt'
+test_path = 'dataset/CXR/test.txt'
 
 train_data = mydataset(train_path, data_transforms)
 test_data = mydataset(test_path, data_transforms)
