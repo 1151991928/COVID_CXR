@@ -27,7 +27,7 @@ class mydataset(Dataset):
         self.transform =transform
 
     def __getitem__(self, index):
-        img = Image.open('data/images_jpegs_255/' + self.all_image_paths[index]).convert('RGB')
+        img = Image.open('dataset/CXR/images/' + self.all_image_paths[index]).convert('RGB')
         img = self.transform(img)
         label = self.all_image_labels[index]
         label = torch.tensor(label, dtype=torch.float32)

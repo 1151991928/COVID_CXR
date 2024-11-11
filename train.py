@@ -18,7 +18,7 @@ from torch.utils.tensorboard import SummaryWriter
 import torch.optim.lr_scheduler as lr_scheduler
 
 batch_size=64
-
+epochs=50
 data_transforms = transforms.Compose([
     transforms.Resize(256),    # 将图片短边缩放至256，长宽比保持不变：
     transforms.CenterCrop(224),   #将图片从中心切剪成3*224*224大小的图片
@@ -35,16 +35,15 @@ test_data_size=len(test_data)
 #损失函数和优化器
 loss_fn=nn.CrossEntropyLoss()
 loss_fn=loss_fn.cuda()
-optimizer=torch.optim.Adam(model.parameters(), lr=0.0001,momentum=0.9,weight_decay=4E-5)
-lf = lambda x: ((1 + math.cos(x * math.pi / epochs)) / 2) * (1 - 0.001) + 0.001  # cosine
-scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lf)
+optimizer=torch.optim.Adam(model.parameters(), lr=0.001)
+
 tb_writer=SummaryWriter('log/')
 
 total_train_step = 0
 total_test_step = 0
-epochs=100
+
 for epoch in range(epochs):
-    print(f'Epoch [{epoch+1}/20]')
+    print(f'Epoch [{epoch+1}/{epochs}]')
     
     # 训练阶段
     model.train()
@@ -57,7 +56,7 @@ for epoch in range(epochs):
         loss = loss_fn(outputs, targets)
         optimizer.zero_grad()
         loss.backward()
-        scheduler.step()
+        optimizer.step()
         total_train_step += 1
         
         train_bar.set_description(f'Train Step: {total_train_step} Loss: {loss.item():.4f}')
@@ -80,8 +79,8 @@ for epoch in range(epochs):
             
             test_bar.set_description(f'Test Loss: {total_test_loss.item() / (total_test_step + 1):.4f} Accuracy: {total_accuracy/test_data_size}')
     
-    print(f'Epoch [{epoch+1}/20] Train Step: {total_train_step} Loss: {loss.item():.4f}')
-    print(f'Epoch [{epoch+1}/20] Test Loss: {total_test_loss.item() / (total_test_step + 1):.4f} Accuracy: {total_accuracy/test_data_size}')
+    print(f'Epoch [{epoch+1}/{epochs}] Train Step: {total_train_step} Loss: {loss.item():.4f}')
+    print(f'Epoch [{epoch+1}/{epochs}] Test Loss: {total_test_loss.item() / (total_test_step + 1):.4f} Accuracy: {total_accuracy/test_data_size}')
     tags = ["loss", "accuracy", "learning_rate"]
     tb_writer.add_scalar(tags[0], total_test_loss.item() / (total_test_step + 1), epoch)
     tb_writer.add_scalar(tags[1], total_accuracy/test_data_size, epoch)
