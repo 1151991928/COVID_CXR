@@ -19,7 +19,7 @@ import torch.optim.lr_scheduler as lr_scheduler
 import datetime
 
 batch_size = 64
-epochs = 5
+epochs = 100
 data_transforms = transforms.Compose([
     transforms.Resize(256),  # 将图片短边缩放至256，长宽比保持不变：
     transforms.CenterCrop(224),  # 将图片从中心切剪成3*224*224大小的图片
@@ -33,17 +33,17 @@ train_data_size = len(train_data)
 test_data_size = len(test_data)
 
 #file and time
-current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-log_filename = str(current_time)+"pig.txt"
+current_time = datetime.datetime.now().strftime("%H:%M:%S")
+log_filename = "pig0.0001.txt"
 file=open(log_filename, mode='w')
-file.write("epochs\tLoss\tAccuracy\tlearning_rate\n")
+file.write("Time\tepochs\tLoss\tAccuracy\tlearning_rate\n")
 
 # 损失函数和优化器
 loss_fn = nn.CrossEntropyLoss()
 loss_fn = loss_fn.cuda()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-tb_writer = SummaryWriter('./log')
+tb_writer = SummaryWriter('./log2')
 
 total_train_step = 0
 total_test_step = 0
@@ -91,7 +91,7 @@ for epoch in range(epochs):
     tb_writer.add_scalar(tags[0], total_test_loss.item() / (total_test_step + 1), epoch)
     tb_writer.add_scalar(tags[1], total_accuracy / test_data_size, epoch)
     tb_writer.add_scalar(tags[2], optimizer.param_groups[0]["lr"], epoch)
-    file.write(f"{epoch}/t{total_test_loss.item() / (total_test_step + 1):.4f}/t{total_accuracy / test_data_size:.4f}/t{optimizer.param_groups[0]['lr']:.4f}")
+    file.write(f"{current_time}\t{epoch}\t{total_test_loss.item() / (total_test_step + 1):.4f}\t{total_accuracy / test_data_size:.4f}\t{optimizer.param_groups[0]['lr']:.4f}\n")
 
     torch.save(model.state_dict(), 'pth/' + f'model_epoch_{epoch}.pth')
     total_test_step += 1
