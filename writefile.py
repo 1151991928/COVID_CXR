@@ -36,7 +36,7 @@ test_data_size = len(test_data)
 current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 log_filename = str(current_time)+"pig.txt"
 file=open(log_filename, mode='w')
-file.write("Time\tepochs\tLoss\tAccuracy\tlearning_rate\n")
+file.write("epochs\tLoss\tAccuracy\tlearning_rate\n")
 
 # 损失函数和优化器
 loss_fn = nn.CrossEntropyLoss()
@@ -91,7 +91,7 @@ for epoch in range(epochs):
     tb_writer.add_scalar(tags[0], total_test_loss.item() / (total_test_step + 1), epoch)
     tb_writer.add_scalar(tags[1], total_accuracy / test_data_size, epoch)
     tb_writer.add_scalar(tags[2], optimizer.param_groups[0]["lr"], epoch)
-    file.write()
+    file.write(f"{epoch}/t{total_test_loss.item() / (total_test_step + 1):.4f}/t{total_accuracy / test_data_size:.4f}/t{optimizer.param_groups[0]['lr']:.4f}")
 
     torch.save(model.state_dict(), 'pth/' + f'model_epoch_{epoch}.pth')
     total_test_step += 1
