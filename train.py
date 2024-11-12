@@ -16,9 +16,9 @@ from resnet50_2label import model
 import sys
 from torch.utils.tensorboard import SummaryWriter
 import torch.optim.lr_scheduler as lr_scheduler
-
+import datetime
 batch_size=64
-epochs=50
+epochs=20
 data_transforms = transforms.Compose([
     transforms.Resize(256),    # 将图片短边缩放至256，长宽比保持不变：
     transforms.CenterCrop(224),   #将图片从中心切剪成3*224*224大小的图片
@@ -32,12 +32,13 @@ test_dataloader=DataLoader(test_data,batch_size=batch_size,shuffle=True)
 train_data_size=len(train_data)
 test_data_size=len(test_data)
 
+
 #损失函数和优化器
 loss_fn=nn.CrossEntropyLoss()
 loss_fn=loss_fn.cuda()
-optimizer=torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer=torch.optim.Adam(model.parameters(), lr=0.0001)
 
-tb_writer=SummaryWriter('log/')
+tb_writer=SummaryWriter('./log')
 
 total_train_step = 0
 total_test_step = 0
@@ -87,5 +88,5 @@ for epoch in range(epochs):
     tb_writer.add_scalar(tags[2], optimizer.param_groups[0]["lr"], epoch)
     torch.save(model.state_dict(), 'pth/'+f'model_epoch_{epoch}.pth')
     total_test_step += 1
-
+tb_writer.close()
 print('Finished Training')
