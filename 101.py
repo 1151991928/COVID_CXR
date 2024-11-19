@@ -7,7 +7,7 @@ from PIL import Image
 import torchvision.models as models
 from tqdm import tqdm
 from dataset_CXR_2label import train_data, test_data
-from resnet50_2label import model
+from resnet_101 import model
 import sys
 from torch.utils.tensorboard import SummaryWriter
 import torch.optim.lr_scheduler as lr_scheduler

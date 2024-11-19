@@ -1,13 +1,10 @@
 import torch
-import torchvision
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
-from PIL import Image
-import torchvision.models as models
 from tqdm import tqdm
 from dataset_CXR_2label import train_data, test_data
-from resnet50_2label import model
+from resnet_34 import model
 import sys
 from torch.utils.tensorboard import SummaryWriter
 import torch.optim.lr_scheduler as lr_scheduler
@@ -29,16 +26,16 @@ test_data_size = len(test_data)
 
 #file and time
 current_time = datetime.datetime.now().strftime("%H:%M:%S")
-log_filename = "pig1.txt"
+log_filename = "pig34.txt"
 file=open(log_filename, mode='w')
 file.write("Time\tepochs\tLoss\tAccuracy\tlearning_rate\n")
 
 # 损失函数和优化器
 loss_fn = nn.CrossEntropyLoss()
 loss_fn = loss_fn.cuda()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 scheduler = lr_scheduler.MultiStepLR(optimizer,milestones=[120],gamma=0.1)
-tb_writer = SummaryWriter('./log1')
+tb_writer = SummaryWriter('./log34')
 
 total_train_step = 0
 total_test_step = 0
